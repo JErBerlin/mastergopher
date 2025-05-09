@@ -7,14 +7,15 @@
   - Cancelling long-running or stuck queries
   - Enforcing deadlines or timeouts
   - Reducing resource usage on aborted requests
-- All contexts start with `context.Background()`, from which child contexts are created using `WithTimeout`, `WithCancel`, etc.
+- Contexts start from `context.Background()` and are extended using `WithTimeout`, `WithCancel`, etc.
+- Use `context.TODO()` as a placeholder when the actual context is not available yet. This is useful during refactoring or early stages of integration.
 
 ## Context behavior per driver
 
-- Database drivers must observe context but do not behave the same.
-  - PostgreSQL cancels queries cleanly on context cancellation.
-  - SQLite in-memory mode may not abort immediately.
-- Don't rely on consistent cancellation across drivers, but still pass context to allow cancellation when supported.
+- Drivers must observe context but differ in how they react to cancellation.
+  - PostgreSQL supports clean aborts on cancellation.
+  - SQLite in-memory may not terminate the query immediately.
+- Don't assume identical cancellation behavior across drivers.
 
 ## Takeaways
 
@@ -23,17 +24,21 @@
   - Running background jobs with time limits
   - Managing shutdowns or user-initiated cancellations
 
-- Example of building a context with timeout:  
+- Build a context with timeout in top level functions like this:  
     ```go  
     ctx := context.Background()  
     ctx, cancel := context.WithTimeout(ctx, 50*time.Millisecond)  
     defer cancel()
     ```
-- For CLI tools, simple scripts, or short queries in isolated code, using context is optional.
+
+- Common function signature in concurrent Go code (context as a first argument by convention):
+
+    `func GetUsers(ctx context.Context, db *sql.DB) ([]User, error)`
+
 
 ## Try it out
 
-The code demonstrates how to use `context.Context` when executing database queries. It shows how to control execution time and handle cases where a query takes too long or the context is cancelled.
+The code shows how to use `context.Context` when executing database queries. It demonstrates how to control execution time and handle cases where a query takes too long or the context is cancelled.
 
 The timeout is defined as a constant:  
     ```go
