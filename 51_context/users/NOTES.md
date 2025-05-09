@@ -36,7 +36,9 @@
 The code demonstrates how to use `context.Context` when executing database queries. It shows how to control execution time and handle cases where a query takes too long or the context is cancelled.
 
 The timeout is defined as a constant:  
-(Go) `const queryTimeout = 5 * time.Millisecond`
+    ```go
+    const queryTimeout = 5 * time.Millisecond`
+    ```
 
 You can modify this value to observe different behaviours:
 
