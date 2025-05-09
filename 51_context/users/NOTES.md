@@ -2,24 +2,44 @@
 
 ## Key points
 
-- `db.Query` internally calls `db.QueryContext` — same for other methods like `Exec`, `Prepare`, etc.
-- Using `db` methods with `context.Context` allows:
-  - Request cancellation
-  - Deadline/timeout propagation
-  - Driver-specific optimisations
+- `db.Query` internally calls `db.QueryContext` — same for `Exec`, `Prepare`, etc.
+- Passing a `context.Context` allows:
+  - Cancelling long-running or stuck queries
+  - Enforcing deadlines or timeouts
+  - Reducing resource usage on aborted requests
+- All contexts start with `context.Background()`, from which child contexts are created using `WithTimeout`, `WithCancel`, etc.
 
 ## Context behavior per driver
 
-- Drivers behave differently when context is cancelled.
-  - Example:
-    - PostgreSQL cancels query properly.
-    - SQLite in-memory may not react the same way.
-- Important: All drivers **must observe** the context and allow cancellation, but the way they do it is not unified.
+- Database drivers must observe context but do not behave the same.
+  - PostgreSQL cancels queries cleanly on context cancellation.
+  - SQLite in-memory mode may not abort immediately.
+- Don't rely on consistent cancellation across drivers, but still pass context to allow cancellation when supported.
 
 ## Takeaways
 
-- Pass an explicit `context.Context` to DB methods (`QueryContext`, `ExecContext`, etc.) in server code to support request cancellation and timeouts.
-- Context is useful when a query may take long or the request may be aborted (e.g. user closes browser, system sends shutdown signal).
-- The database driver may abort the running query if the context is cancelled, though support varies across drivers.
-- Use `http.Request.Context()` or `context.WithTimeout` to manage the context lifecycle.
-- For short-lived CLI tools or scripts where the entire program runs synchronously, passing context to db calls is unnecessary.
+- Use `QueryContext`, `ExecContext`, etc., with a proper `context.Context` when:
+  - Handling incoming HTTP requests
+  - Running background jobs with time limits
+  - Managing shutdowns or user-initiated cancellations
+
+- Example of building a context with timeout:  
+    ```go  
+    ctx := context.Background()`  
+    ctx, cancel := context.WithTimeout(ctx, 50*time.Millisecond)`  
+    defer cancel()`
+    ```
+- For CLI tools, simple scripts, or short queries in isolated code, using context is optional.
+
+## Try it out
+
+The code demonstrates how to use `context.Context` when executing database queries. It shows how to control execution time and handle cases where a query takes too long or the context is cancelled.
+
+The timeout is defined as a constant:  
+(Go) `const queryTimeout = 5 * time.Millisecond`
+
+You can modify this value to observe different behaviours:
+
+- Change the value to a very low number (e.g. 1 microsecond) to force the deadline to expire before the query finishes. This will cause the operation to be aborted and print a timeout message.
+- Change the value to a higher number (e.g. 100 millisecond) to allow the query to complete and print the user data normally.
+
