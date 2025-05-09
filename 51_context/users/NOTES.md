@@ -25,9 +25,9 @@
 
 - Example of building a context with timeout:  
     ```go  
-    ctx := context.Background()`  
-    ctx, cancel := context.WithTimeout(ctx, 50*time.Millisecond)`  
-    defer cancel()`
+    ctx := context.Background()  
+    ctx, cancel := context.WithTimeout(ctx, 50*time.Millisecond)  
+    defer cancel()
     ```
 - For CLI tools, simple scripts, or short queries in isolated code, using context is optional.
 
