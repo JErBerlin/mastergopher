@@ -7,7 +7,7 @@ This repository contains Go code snippets and exercises from the **Gopher Guides
 
 ## 📁 Structure
 
-Each directory represents a module or topic from the course, prepended by a digit made of the course day and the topic number for each day:
+Each directory represents a module or topic from the course, prepended by a digit for the course day and one for the topic number of that day:
 
 21_maps/
 
