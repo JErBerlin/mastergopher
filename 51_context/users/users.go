@@ -1,29 +1,38 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func main() {
+const queryTimeout = 1 * time.Microsecond // adjust to test timeout behavior
 
+func main() {
 	db, err := sql.Open("sqlite3", ":memory:")
 	if err != nil {
-		log.Fatalf("Open db: %s", err.Error())
+		log.Fatalf("open db: %s", err.Error())
 	}
 
-	// Load data
 	if err := load(db); err != nil {
-		log.Fatalf("Load data: %s", err.Error())
+		log.Fatalf("load data from db: %s", err.Error())
 	}
 
-	// Get users
-	users, err := GetUsers(db)
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	users, err := GetUsers(ctx, db)
 	if err != nil {
-		log.Fatalf("Get users: " + err.Error())
+		if ctx.Err() == context.DeadlineExceeded {
+			log.Println("Error: get users: Request timed out (context deadline exceeded)")
+		} else {
+			log.Fatalf("get users: %s", err.Error())
+		}
+		return
 	}
 
 	for _, u := range users {
@@ -37,15 +46,15 @@ type User struct {
 	Name string
 }
 
-func GetUsers(db *sql.DB) ([]User, error) {
+func GetUsers(ctx context.Context, db *sql.DB) ([]User, error) {
 	q := "select * from users;"
-	rows, err := db.Query(q)
+	rows, err := db.QueryContext(ctx, q)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	users := []User{}
-
 	for rows.Next() {
 		var u User
 		if err := rows.Scan(&u.ID, &u.Name); err != nil {
@@ -58,8 +67,12 @@ func GetUsers(db *sql.DB) ([]User, error) {
 
 func load(db *sql.DB) error {
 	_, err := db.Exec(`
-		create table users(id text, name text);
-		insert into users(id, name) values ('abdc0001', 'Leon'), ('ghdj0002', 'Francis'), ('rlhy0003', 'Pizzi'), ('etyu0004', 'Tosca');
-	`)
+        create table users(id text, name text);
+        insert into users(id, name) values 
+            ('abdc0001', 'Leon'), 
+            ('ghdj0002', 'Francis'), 
+            ('rlhy0003', 'Pizzi'), 
+            ('etyu0004', 'Tosca');
+    `)
 	return err
 }
