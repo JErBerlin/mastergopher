@@ -1,0 +1,13 @@
+# Go build artifacts
+*.exe
+*.exe~
+
+# Output of `go run`
+*.out
+
+# Editor/IDE files
+.idea/
+.vscode/
+*.swp
+*~
+
