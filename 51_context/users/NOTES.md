@@ -18,7 +18,8 @@
 
 ## Takeaways
 
-- Prefer using context-aware DB methods (`QueryContext`, `ExecContext`, etc.) with an explicit `context.Context`, especially in request-handling code (e.g. HTTP handlers, background workers with deadlines).
-- Manage the `context.Context` lifecycle yourself (e.g. via `http.Request.Context()` or `context.WithTimeout`) to allow proper cancellation or timeout control.
-- Avoid relying on default wrappers like `db.Query` unless context is not relevant to your use case (e.g., CLI scripts, short-lived tools).
-
+- Pass an explicit `context.Context` to DB methods (`QueryContext`, `ExecContext`, etc.) in server code to support request cancellation and timeouts.
+- Context is useful when a query may take long or the request may be aborted (e.g. user closes browser, system sends shutdown signal).
+- The database driver may abort the running query if the context is cancelled, though support varies across drivers.
+- Use `http.Request.Context()` or `context.WithTimeout` to manage the context lifecycle.
+- For short-lived CLI tools or scripts where the entire program runs synchronously, passing context to db calls is unnecessary.
