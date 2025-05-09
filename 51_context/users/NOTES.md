@@ -8,7 +8,9 @@
   - Enforcing deadlines or timeouts
   - Reducing resource usage on aborted requests
 - Contexts start from `context.Background()` and are extended using `WithTimeout`, `WithCancel`, etc.
-- Use `context.TODO()` as a placeholder when the actual context is not available yet. This is useful during refactoring or early stages of integration.
+- A common function signature in concurrent Go code has a context as the first argument:
+
+    `func GetUsers(ctx context.Context, db *sql.DB) ([]User, error)`
 
 ## Context behavior per driver
 
@@ -31,10 +33,7 @@
     defer cancel()
     ```
 
-- Common function signature in concurrent Go code (context as a first argument by convention):
-
-    `func GetUsers(ctx context.Context, db *sql.DB) ([]User, error)`
-
+- Use `context.TODO()` as a placeholder when the actual context is not available yet. This is useful during refactoring or early stages of integration.
 
 ## Try it out
 
