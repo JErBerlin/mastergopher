@@ -22,9 +22,6 @@ func main() {
 		log.Fatalf("load data from db: %s", err.Error())
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
-	defer cancel()
-
 	users, err := GetUsers(ctx, db)
 	if err != nil {
 		if ctx.Err() == context.DeadlineExceeded {
@@ -46,7 +43,10 @@ type User struct {
 	Name string
 }
 
-func GetUsers(ctx context.Context, db *sql.DB) ([]User, error) {
+// GetUsers runs a select all users on the db but using a context for possible cancellation.
+func GetUsers(db *sql.DB) ([]User, error) {
+	ctx := context.TODO() // context is expected to be provided by the caller in a later implementation
+
 	q := "select * from users;"
 	rows, err := db.QueryContext(ctx, q)
 	if err != nil {
