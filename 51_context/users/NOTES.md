@@ -18,8 +18,7 @@
 
 ## Takeaways
 
-- Always use `context.Context` with DB operations.
-- Don't assume consistent cancellation behavior across drivers.
-- For predictable results, prefer production-ready drivers that are known to handle context correctly.
-
+- Prefer using context-aware DB methods (`QueryContext`, `ExecContext`, etc.) with an explicit `context.Context`, especially in request-handling code (e.g. HTTP handlers, background workers with deadlines).
+- Manage the `context.Context` lifecycle yourself (e.g. via `http.Request.Context()` or `context.WithTimeout`) to allow proper cancellation or timeout control.
+- Avoid relying on default wrappers like `db.Query` unless context is not relevant to your use case (e.g., CLI scripts, short-lived tools).
 
