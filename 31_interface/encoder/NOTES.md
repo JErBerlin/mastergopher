@@ -23,9 +23,11 @@
 
 - Always ensure embedded interfaces or interface fields are initialized before use.
 - When building APIs that accept general values (`interface{}`), prefer using type switches to direct specific logic per type.
-- Prefer pointer receivers when:                                                                                   - You need to mutate the struct.
+- Prefer pointer receivers when:
+  - You need to mutate the struct.
   - You want to avoid copying large structs.
-- Prefer value receivers when:                                                                                     - The method does not modify the struct.
+- Prefer value receivers when:
+  - The method does not modify the struct.
 - Use `json.Marshaler` or similar interfaces with type switches to let types define custom encoding logic.
 
 Example of a type switch:
