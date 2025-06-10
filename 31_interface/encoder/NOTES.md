@@ -32,13 +32,18 @@
 
 Example of a type switch:
 
-(Go)  
-`switch v := input.(type) {`  
-`case CustomEncoder: ...`  
-`case string: ...`  
-`case int: ...`  
-`default: ...`  
-`}`
+```(Go)  
+switch v := input.(type) {  
+case CustomEncoder: 
+    // ...  
+case string: 
+    // ...  
+case int: 
+    // ...  
+default: 
+    // ...  
+}
+```
 
 This pattern is widespread in libraries and generic helpers.
 
