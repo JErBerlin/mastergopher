@@ -24,7 +24,7 @@
 - Unexported types can still be embedded and promoted from, but the inner type identifier remains inaccessible.
 - Use type conversion to define alternate behaviors without modifying original types.
 - Always check for nil pointers when embedding pointer types and calling a (possibly) promoted method.
-- Embedding a type does not make the outer type satisfy the interfaces it is implementing, even if the right methods are promoted. 
+- Embedding a type can make the outer type satisfy the interfaces the inner type implements, but you cannot use the outer type in a function argument where the embedded type is required. 
 
 ## Try it out
 
