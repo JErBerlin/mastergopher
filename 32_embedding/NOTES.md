@@ -28,6 +28,10 @@
 
 - Embed a struct and access its fields and methods through the outer struct.
 - Override a method and still call the embedded method from the override.
-- Try embedding two types to be promoted, but both sharing the same field or method name and observe compiler errors.
 - Embed a pointer to a struct and try calling its methods when uninitialized (expect a panic).
+
+### Example program: `readcloser.go` -- Leaking files
+- Run /readcloser/readcloser.go` to observe proper resource cleanup using `ReaderWithCloser`.  
+  - Try disabling the `Close()` call or lowering the file limit (`ulimit -n 256`) to see the effect of leaking file descriptors.  
+  - As a variation, wrap other `io.Reader` types or log each successful `Close()` call.
 
