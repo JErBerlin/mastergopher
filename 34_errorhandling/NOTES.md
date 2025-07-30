@@ -77,79 +77,21 @@
 
 ## Try it out
 
-```go
-package main
+Write a Go program named `errdemo` that demonstrates:
 
-import (
-    "errors"
-    "fmt"
-    "log"
-    "runtime/debug"
-)
+* Sentinel errors  
+  - Declare a package‑level variable `errEmptyInput = errors.New("input cannot be empty")`  
+  - Use `errors.Is` to detect that specific sentinel error  
 
-var errEmptyInput = errors.New("input cannot be empty")
+* Custom error types 
+  - Define `type missingError struct { key string }` with an `Error() string` method  
+  - Use `errors.As` to extract and inspect that type  
 
-type missingError struct {
-    key string
-}
+* Panic & recover  
+  - In a recursive function, call `panic("…")` when depth == 5  
+  - In a `defer` recover block, use `runtime/debug.PrintStack()` to print the stack trace  
 
-func (e missingError) Error() string {
-    return fmt.Sprintf("no entry found for %q", e.key)
-}
+* Tools & commands  
+  - Build and run with `go run errdemo/main.go`  
+  - Compile with `go build -o errdemo ./errdemo`  
 
-func fetch(key string) (string, error) {
-    db := map[string]string{"lang": "Go", "tool": "gopher", "pkg": "errors"}
-
-    if key == "" {
-        return "", errEmptyInput
-    }
-    if val, ok := db[key]; ok {
-        return val, nil
-    }
-    return "", missingError{key}
-}
-
-// TODO: refactor this to use errors.Is
-func checkEmpty() {
-    key := ""
-    v, err := fetch(key)
-    if err != nil {
-        if err != errEmptyInput {
-            log.Fatal(err)
-        }
-        fmt.Println("please provide a non-empty key")
-        return
-    }
-    fmt.Printf("value: %q\n", v)
-}
-
-// TODO: refactor this to use errors.As
-func checkMissing() {
-    key := "unknown"
-    v, err := fetch(key)
-    if err != nil {
-        if _, ok := err.(missingError); !ok {
-            log.Fatal(err)
-        }
-        fmt.Printf("missing: %s\n", err)
-        return
-    }
-    fmt.Printf("value: %q\n", v)
-}
-
-// TODO: modify this to recover when depth == 5 and print a stack trace
-func nestedWalk(depth int) {
-    if depth == 0 {
-        return
-    }
-    fmt.Println("depth", depth)
-    nestedWalk(depth - 1)
-}
-
-func main() {
-    checkEmpty()
-    checkMissing()
-    // after refactoring, this will panic at depth 5 and recover
-    nestedWalk(7)
-}
-```
